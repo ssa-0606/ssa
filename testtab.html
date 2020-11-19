@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table,tr,td{
+            border: red 1px solid;
+        }
+        table{
+            width: 400px;
+        }
+       
+    </style>
+</head>
+<body>
+    
+    <table id="mytable"></table>
+
+    <form id="query">
+        <input type="text" name="id" id="id" placeholder="id">
+        <input type="text" name="name" id="name" placeholder="name">
+        <input type="submit" value="add">
+    </form>
+
+    <form id="update">
+        <input type="text" name="id1" id="id1" placeholder="id">
+        <input type="text" name="name1" id="name1" placeholder="name">
+        <input type="submit" value="update"> 
+    </form>
+
+    <script>
+        
+
+
+       
+
+        function createTable(val){
+
+
+           
+           
+            let books = JSON.parse(val)
+            let mytable = document.querySelector("#mytable")
+            mytable.innerText=""
+            
+            for(let i=0; i<books.length;i++){
+                let innertr = document.createElement("tr")
+                let innertd1 = document.createElement("td")
+                let innertd2 = document.createElement("td")
+                let innertd3 = document.createElement("td")
+
+                innertd3.innerHTML = "<button onclick='remove("+books[i].id+")'>删除</button>"
+
+                innertd1.innerText=books[i].id
+                innertd2.innerText=books[i].name
+                innertr.appendChild(innertd1)
+                innertr.appendChild(innertd2)
+                innertr.appendChild(innertd3)
+                mytable.appendChild(innertr)
+
+            }
+        }
+
+
+
+        function createtr(val){
+            let book = JSON.parse(val)
+            let mytable = document.querySelector("#mytable")
+            let mytr = document.createElement("tr")
+            let mytd1 = document.createElement("td")
+            let mytd2 = document.createElement("td") 
+            let mytd3 = document.createElement("td")
+
+            mytd1.innerText=book.id
+            mytd2.innerText=book.name
+            mytd3.innerHTML="<button onclick='remove("+book.id+")'>删除</button>"
+
+            mytr.appendChild(mytd1)
+            mytr.appendChild(mytd2)
+            mytr.appendChild(mytd3)
+
+            mytable.appendChild(mytr)
+        }
+
+        
+            console.log("one");
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange=function(){
+                if(xhr.readyState==4){
+                    if(xhr.status==200){
+                        //alert(xhr.responseText);
+                        createTable(xhr.responseText);
+                    }
+                }
+            }
+            xhr.open("GET","http://localhost:8082/books");
+            xhr.send();
+
+
+
+            function updatetab(val){
+                let updateed = JSON.parse(val)
+                let a = updateed.id
+
+
+                let tab = document.querySelector("#mytable")
+                let row = tab.rows.length
+               
+                for(let i=1;i<=row;i++){
+                    if(document.querySelector("tr:nth-child("+i+")>td:nth-child(1)").innerText==a){
+                        let uptd = document.querySelector("tr:nth-child("+i+")>td:nth-child(2)")
+                        uptd.innerText=updateed.name
+                    }
+                }
+
+            }
+
+
+       
+        document.querySelector("form").addEventListener("submit",function(event){
+            let id = document.querySelector("#id").value;
+            let name = document.querySelector("#name").value;
+            
+            let book = {id:id,name:name};
+
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange=function(){
+                if(xhr.readyState==4&&xhr.status==200){
+                    //alert(xhr.responseText);
+                    createtr(xhr.responseText)
+                }
+            }
+
+
+            xhr.open("POST","http://localhost:8082/books");
+            xhr.setRequestHeader('Content-Type','application/json');
+            
+            xhr.send(JSON.stringify(book));
+
+            event.preventDefault();
+
+        })
+
+        document.querySelector("#update").addEventListener("submit",function(event){
+            let id = document.querySelector("#id1").value;
+            let name = document.querySelector("#name1").value;
+            
+            let upbook = {id:id,name:name};
+
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange=function(){
+                if(xhr.readyState==4&&xhr.status==200){
+                    //alert(xhr.responseText);
+                    updatetab(xhr.responseText)
+                }
+            }
+
+
+            xhr.open("PUT","http://localhost:8082/books");
+            xhr.setRequestHeader('Content-Type','application/json');
+            
+            xhr.send(JSON.stringify(upbook));
+
+            event.preventDefault();
+
+        })
+
+
+
+        function query(){
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange=function(){
+                if(xhr.readyState==4){
+                    if(xhr.status==200){
+                        //alert(xhr.responseText);
+                        //createTable(xhr.responseText);
+                        console.log("suc");
+                    }
+                }
+            }
+            xhr.open("GET","http://localhost:8082/books");
+            xhr.send();
+        }
+
+
+
+        function remove(d){
+                let bookid = {id:d,name:""}
+                //console.log(bookid);
+                let xhr = new XMLHttpRequest();
+                xhr.onreadystatechange=function(){
+                    if(xhr.readyState==4 && xhr.status==200){
+                        console.log(xhr.responseText);
+                    }
+                }
+                xhr.open("DELETE","http://localhost:8082/books")
+                xhr.setRequestHeader('Content-Type','application/json')
+                xhr.send(JSON.stringify(bookid))
+
+
+                let tab = document.querySelector("#mytable")
+                let row = tab.rows.length
+               
+                for(let i=1;i<=row;i++){
+                    if(document.querySelector("tr:nth-child("+i+")>td:nth-child(1)").innerText==d){
+                        tab.deleteRow(Number(i-1));
+                    }
+                }
+                
+                
+                query()
+
+            }
+
+
+                
+                
+
+                
+                
+                // for(let i = 1;i<=100;i++){
+                //     document.querySelector("tr:nth-child("+i+")>td:nth-child(3)>button").addEventListener("click",function(d){
+
+                //     let bookid = {id:d,name:""}
+                //     //console.log(bookid);
+                //     let xhr = new XMLHttpRequest();
+                //     xhr.onreadystatechange=function(){
+                //         if(xhr.readyState==4 && xhr.status==200){
+                //             console.log(xhr.responseText);
+                //         }
+                //     }
+                //     xhr.open("DELETE","http://localhost:8082/books")
+                //     xhr.setRequestHeader('Content-Type','application/json')
+                //     xhr.send(JSON.stringify(bookid))
+
+                //     })
+                // }
+
+            
+
+            
+            
+                
+
+
+    </script>
+    
+</body>
+</html>
